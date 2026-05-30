@@ -124,6 +124,7 @@ jobs:
                 }
 
                 const blockText = block.innerText || a.innerText || '';
+
                 const priceMatch =
                   blockText.match(/¥\s?([\d,]+)/) ||
                   blockText.match(/([\d,]+)\s?円/);
@@ -143,41 +144,34 @@ jobs:
                 }
               }
 
-              return {
-                first: items[0] || null,
-                candidates: items.slice(0, 5)
-              };
+              return items[0] || null;
             });
 
-            console.log('候補上位5件:', JSON.stringify(item?.candidates || [], null, 2));
-
-            if (!item || !item.first) {
+            if (!item) {
               console.log(`⚠️ ${t.name}: ヒット0件 or 取得失敗`);
               continue;
             }
 
-            const firstItem = item.first;
+            console.log(`✅ 取得成功: ${t.name} ¥${item.price} ${item.url}`);
 
-            console.log(`✅ 取得成功: ${t.name} ¥${firstItem.price} ${firstItem.url}`);
-
-            const isNew = seen[t.name] !== firstItem.id;
+            const isNew = seen[t.name] !== item.id;
 
             const priceOk =
-              (t.maxPrice === 0 || firstItem.price <= t.maxPrice) &&
-              (t.minPrice === 0 || firstItem.price >= t.minPrice);
+              (t.maxPrice === 0 || item.price <= t.maxPrice) &&
+              (t.minPrice === 0 || item.price >= t.minPrice);
 
             if (isNew && priceOk) {
               foundMsgs.push({
                 name: t.name,
-                price: firstItem.price,
-                url: firstItem.url,
+                price: item.price,
+                url: item.url,
                 searchUrl,
-                id: firstItem.id,
+                id: item.id,
                 prev: seen[t.name] || ''
               });
-              seen[t.name] = firstItem.id;
+              seen[t.name] = item.id;
             } else {
-              if (!seen[t.name]) seen[t.name] = firstItem.id;
+              if (!seen[t.name]) seen[t.name] = item.id;
             }
           }
 
